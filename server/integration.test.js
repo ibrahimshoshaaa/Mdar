@@ -11,7 +11,7 @@ globalThis.window=globalThis;
 await import('../ui/offline.js');
 delete globalThis.window;
 
-test('full API inventory, sales, reports, roles and cashier device cycle', {timeout:60000}, async()=>{
+async function runCycle(vercel=false){
   const db=await PGlite.create();let child,socket,log='';
   try{
     const root=new URL('../',import.meta.url);
@@ -21,7 +21,7 @@ test('full API inventory, sales, reports, roles and cashier device cycle', {time
     const password='integration-test-password';
     await db.query("INSERT INTO users(email,password_hash,role) VALUES($1,$2,'admin')",['admin@test.local',await hashPassword(password)]);
     socket=new PGLiteSocketServer({db,host:'127.0.0.1',port:15439});await socket.start();
-    child=spawn(process.execPath,['server/index.js'],{cwd:root,env:{...process.env,DATABASE_URL:'postgresql://postgres:postgres@127.0.0.1:15439/postgres',DATABASE_POOL_MAX:'1',PORT:'15440',PRICE_QUOTE_SECRET:'integration-only-secret-'.repeat(3),SHOPIFY_WRITES_ENABLED:'false'}});
+    child=spawn(process.execPath,[vercel?'server/vercel-test-runner.js':'server/index.js'],{cwd:root,env:{...process.env,DATABASE_URL:'postgresql://postgres:postgres@127.0.0.1:15439/postgres',DATABASE_POOL_MAX:'1',PORT:'15440',PRICE_QUOTE_SECRET:'integration-only-secret-'.repeat(3),SHOPIFY_WRITES_ENABLED:'false'}});
     child.stdout.on('data',chunk=>{log+=chunk});child.stderr.on('data',chunk=>{log+=chunk});
     await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('Server startup failed: '+log)),10000);child.stdout.on('data',()=>{if(log.includes('Madar listening')){clearTimeout(timer);resolve()}});child.on('exit',()=>{clearTimeout(timer);reject(new Error(log))})});
     const request=async(path,{cookie,body,method=body?'POST':'GET',status=200}={})=>{
@@ -30,6 +30,8 @@ test('full API inventory, sales, reports, roles and cashier device cycle', {time
       return {value:response.headers.get('content-type')?.includes('json')?JSON.parse(text):text,cookie:response.headers.get('set-cookie')?.split(';')[0]};
     };
     const admin=(await request('/api/login',{body:{email:'admin@test.local',password}})).cookie;
+    assert.match((await request('/')).value,/مدار/);
+    assert.match((await request('/app.js')).value,/loadDashboard/);
     const makeLocation=async(name,kind)=>(await request('/api/locations',{cookie:admin,body:{name,kind},status:201})).value.id;
     const warehouse=await makeLocation('Test warehouse','warehouse'),branch=await makeLocation('Test branch','branch'),other=await makeLocation('Other branch','branch');
     const product=(await request('/api/products',{cookie:admin,body:{name:'Test shirt',sku:'SHIRT-B-L',size:'L',color:'Black',price:100},status:201})).value;
@@ -89,4 +91,6 @@ test('full API inventory, sales, reports, roles and cashier device cycle', {time
     if(child&&child.exitCode===null){child.kill('SIGTERM');await once(child,'exit')}
     if(socket){await socket.stop();await new Promise(resolve=>setTimeout(resolve,100))}await db.close();
   }
-});
+}
+test('full API inventory, sales, reports, roles and cashier device cycle',{timeout:60000},()=>runCycle());
+test('Vercel Web Request adapter runs the full API cycle',{timeout:60000},()=>runCycle(true));

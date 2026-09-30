@@ -6,11 +6,12 @@
   "scripts": {
     "start": "node server/index.js",
     "bootstrap": "node server/bootstrap.js",
-    "check": "node --check server/index.js && node --check server/bootstrap.js && node --check ui/app.js && node --check ui/offline.js && node --check ui/sw.js && node --check server/shopify.js && node --check server/shopify-sync.js && node --check server/webhook.js && node --check server/reports.js",
+    "check": "node --check server/index.js && node --check server/bootstrap.js && node --check ui/app.js && node --check ui/offline.js && node --check ui/sw.js && node --check server/shopify.js && node --check server/shopify-sync.js && node --check server/webhook.js && node --check server/reports.js && node --check server/app.js && node --check api/index.js",
     "test": "node --test server/*.test.js",
     "test:integration": "node --test server/integration.test.js"
   },
   "dependencies": {
+    "@vercel/functions": "^3.9.9",
     "pg": "^8.16.0"
   },
   "engines": {

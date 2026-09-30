@@ -1,0 +1,24 @@
+name: Create first admin
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: bootstrap-admin
+  cancel-in-progress: false
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --omit=dev
+      - name: Create admin on the configured database
+        run: npm run bootstrap
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ADMIN_BOOTSTRAP_EMAIL: ${{ secrets.ADMIN_BOOTSTRAP_EMAIL }}
+          ADMIN_BOOTSTRAP_PASSWORD: ${{ secrets.ADMIN_BOOTSTRAP_PASSWORD }}

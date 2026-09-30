@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "npm run check",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "ui/**",
+      "maxDuration": 60
+    }
+  },
+  "rewrites": [{ "source": "/:path*", "destination": "/api/index?__path=:path*" }]
+}
