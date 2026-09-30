@@ -1,0 +1,24 @@
+{
+  "name": "madar-pos",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "bootstrap": "node server/bootstrap.js",
+    "check": "node --check server/index.js && node --check server/bootstrap.js && node --check ui/app.js && node --check ui/offline.js && node --check ui/sw.js && node --check server/shopify.js && node --check server/shopify-sync.js && node --check server/webhook.js && node --check server/reports.js",
+    "test": "node --test server/*.test.js",
+    "test:integration": "node --test server/integration.test.js"
+  },
+  "dependencies": {
+    "pg": "^8.16.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@electric-sql/pglite-socket": "^0.2.11",
+    "fake-indexeddb": "^6.2.5"
+  }
+}
