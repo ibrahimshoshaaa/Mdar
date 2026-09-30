@@ -9,5 +9,8 @@
       "maxDuration": 60
     }
   },
-  "rewrites": [{ "source": "/:path*", "destination": "/api/index?__path=:path*" }]
+  "rewrites": [
+    { "source": "/", "destination": "/api/index?__path=%2F" },
+    { "source": "/:path*", "destination": "/api/index?__path=:path*" }
+  ]
 }
